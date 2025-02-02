@@ -1,0 +1,13 @@
+:root {
+    --primary-color: #87D68D;
+    --secondary-color: #BCEBCB;
+    --background-color: #F7FFF6;
+    
+    --text-color: #222;
+    --subtext-color: #8491A3;
+
+    --light-text-color: #fff;
+    --light-subtext-color: #93B48B;
+
+    font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+}

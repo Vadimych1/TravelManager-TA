@@ -1,0 +1,64 @@
+html(lang="en")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title #{appname}
+
+        link(rel="stylesheet", href="css/index.css")
+        link(rel="stylesheet", href="css/global.css")
+    body
+        header
+            div.logo
+                img(src="favicon.png", alt="fvc")
+                h1 #{appname}
+
+            div.buttons
+                button.about О нас
+                button.createTravel Создать поездку
+
+            div.user
+                if !user
+                    a.login(href="/auth/login") Войти
+                    a.register(href="/auth/register") Зарегистрироваться 
+                else
+                    h2.username #{user.name}
+        
+        main.top
+            div.about-slider
+                div.slider-block
+                    div.side
+                        h1.title Создавайте маршруты
+                        p.desc Подберём для вас самые красивые места, чтобы вы побывали в них
+                    div.side
+                        img(src="create-maps.png")
+                
+                div.slider-block
+                    div.side
+                        h1.title Делитесь своими впечатлениями
+                        p.desc Оставляйте оценки, чтобы другие пользователи тоже посетили это место
+                    div.side
+                        img(src="feedback.png")
+                
+                div.slider-block
+                    div.side
+                        h1.title Просматривайте публичные маршруты
+                        p.desc Выберите для себя уже составленный маршрут от других пользователей
+                    div.side
+                        img(src="public-maps.png")
+            
+            div.background
+                div.inner-circle
+                    div.outer-circle
+            
+        main.content
+            button.feed-request Публичные маршруты
+            div.public-maps-slider
+                //- TODO: add slider logic
+                p todo 
+            
+            button.create-map Создать свой маршрут
+            div.create-own-map
+                //- TODO: create own map
+                p todo
+    
+    script(src="js/index.js")

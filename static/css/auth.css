@@ -1,0 +1,120 @@
+body {
+    background-color: var(--background-color);
+    padding: 0;
+    margin: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+@media screen and (min-width: 600px) {
+    .auth-body {
+        width: 30%;
+        height: 55%;
+
+        background-color: white;
+
+        border-radius: 10px;
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        overflow: hidden;
+
+        box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .auth-body h1 {
+        text-align: center;
+    }
+
+    .auth-body form {
+        display: flex;
+        flex-direction: column;
+        margin: 20px;
+    }
+
+    .auth-body form input {
+        outline: none;
+        border: 1px solid var(--subtext-color);
+        font-size: 1.1rem;
+        height: 40px;
+        padding-left: 10px;
+
+        border-radius: 8px;
+
+        transition: 0.3s;
+
+        background-color: #00000005;
+    }
+
+    .auth-body form input:user-invalid {
+        border: 1px solid red;
+    }
+
+    .auth-body form input:user-valid {
+        border: 1px solid var(--primary-color);
+    }
+
+    .auth-body form p {
+        margin-top: 20px;
+        margin-bottom: 5px;
+        font-size: 1.15rem;
+    }
+
+    .auth-body form input[type="submit"] {
+        box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.2);
+
+        padding: 0;
+        border: none;
+
+        margin-top: 40px;   
+        width: 40%;
+        height: 40px;
+
+        align-self: center;
+
+        background-color: var(--primary-color);
+        color: #fff;
+        border-radius: 10px;
+    }
+
+    .other-actions {
+        box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.2);
+        background-color: var(--secondary-color);
+        padding: 10px;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-evenly;
+    }
+
+    .other-actions p {
+        margin: 0;
+        margin-top: 3px;
+        padding: 0;
+        color: var(--subtext-color);
+        font-size: 1rem;
+    }
+
+    .other-actions a {
+        text-decoration: underline;
+        color: var(--primary-color);
+        transition: 0.3s;
+    }
+
+    .other-actions a:hover {
+        text-decoration: none;
+        filter: brightness(0.8);
+    }
+}
+
+.error {
+    color: red;
+    position: absolute;
+    font-size: 0.8rem;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+}
