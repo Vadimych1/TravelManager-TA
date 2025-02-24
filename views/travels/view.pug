@@ -5,28 +5,31 @@ html(lang="ru")
         title Просмотр маршрута #{travelname} - #{appname}
         link(rel="stylesheet", href="/css/global.css")
     body
-        a(href="/travels") Назад 
+        button(onclick="(function(){navigation.back()})()") Назад
 
-        h1 #{m_name}
-        h2 #{m_town}
-        a(href="/travels/comments?type=activity&id=#{activity.id}") Комментарии и отзывы
+        h1 #{travel.name}
+        h2 #{travel.town.name}
+        p #{travel.description}
+        a(href="/travels/comments?type=travel&id=" + travel.id) Комментарии и отзывы
 
 
         hr
 
-        if activities
-            for activity in activities
+
+        if travel.activities
+            for activity in travel.activities
                 li.activity
-                    p #{activity.name}
+                    h3 #{activity.name}
                     p #{activity.description}
 
                     if activity.image
-                        img #{activity.image}
+                        img(src=activity.image)
                     else
                         p Изображения отсутствуют
 
-                    a(href="/travels/comments?type=activity&id=#{activity.id}") Комментарии и отзывы
+                    a(href="/travels/comments?type=activity&id=" + activity.id) Комментарии и отзывы
 
 
+        //- TODO
         button Поделиться
         button Экспорт

@@ -3,7 +3,7 @@ import pug from 'pug';
 import path from 'path';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-import { login, register, sessionParser } from './src/database.js';
+import { db, login, register, sessionParser, travels } from './src/database.js';
 
 dotenv.config();
 
@@ -76,37 +76,66 @@ app.get("/auth", (req, res) => {
 });
 
 app.get("/profile", (req, res) => {
-    requireAuth(req, res);
+    if (requireAuth(req, res))
     res.render("profile/index", {
         ...params
     });
 });
 
-app.get("/travels/comments", (req, res) => {
-    requireAuth(req, res);
-    res.render("travels/comments", {
-        ...params
-    });
+app.get("/travels/comments", async (req, res) => {
+    const id = req.query.id;
+    const type = req.query.type;
+
+    if (!id || !type) {
+        res.end();
+    }
+
+    let p = {
+        ...params,
+        comments: type == "travel" ? await travels.getTravelComments(id) : travels.getActivityComments(id),
+        travel: type == "travel" ? await travels.getPublicTravel(id) : await travels.getActivity(id),
+    }
+
+    p.travel.town = await travels.getTown(p.travel.town);
+
+    if (requireAuth(req, res))
+    res.render("travels/comments", p);
 });
 
-app.get("/travels/new", (req, res) => {
-    requireAuth(req, res);
+app.get("/travels/new", async (req, res) => {
+    if (requireAuth(req, res))
     res.render("travels/new", {
-        ...params
+        ...params,
+        towns: await travels.getTowns(),
     });
 });
 
-app.get("/travels/view", (req, res) => {
-    requireAuth(req, res);
+app.get("/travels/view", async (req, res) => {
+    if (!requireAuth(req, res)) return;
+
+    const t_id = req.query.id;
+    let t = await travels.getPublicTravel(t_id);
+
+    if (!t) {
+        t = await travels.getTravel(t_id, req.session?.user_id);
+    }
+
+    if (t) {
+        t.town = await travels.getTown(t.town); 
+        t.activities = await travels.getActivities(t.activities);
+    }
+
     res.render("travels/view", {
-        ...params
+        ...params,
+        travel: t,
     });
 });
 
-app.get("/travels", (req, res) => {
+app.get("/travels", async (req, res) => {
     requireAuth(req, res);
     res.render("travels/index", {
-        ...params
+        ...params,
+        recommendations: await travels.getRecommendations(),
     });
 });
 

@@ -5,19 +5,24 @@ html(lang="ru")
         title Просмотр комментариев о #{travelname} - #{appname}
         link(rel="stylesheet", href="/css/global.css")
     body
+        button(onclick="(function(){navigation.back()})()") Назад
+
         h1 #{travel.name}
-        h3 #{travel.town}
+        h3 Город: #{travel.town.name}
 
         hr
 
         ul.comments
-            for comment in comments
-                li.comment
-                    p #{comment.username}: #{comment.text}
-                    if comment.stars == 1:
-                        p 1 звезда
-                    else if comment.stars == 5:
-                        p 5 звёзд
-                    else
-                        p #{comment.stars} звёзд
-                
+            if comments && comments.length > 0
+                for comment in comments
+                    li.comment
+                        p #{comment.username}: #{comment.text}
+                        p Понравилось: #{comment.pros}
+                        if comment.stars == 1
+                            p 1 звезда
+                        else if comment.stars == 5
+                            p 5 звёзд
+                        else
+                            p #{comment.stars} звёзд
+            else 
+                p Комментариев и отзывов пока нет

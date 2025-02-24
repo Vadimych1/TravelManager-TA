@@ -5,13 +5,16 @@ html(lang="ru")
         title Маршруты - #{appname}
         link(rel="stylesheet", href="/css/global.css")
     body 
+        button(onclick="(function(){navigation.back()})()") Назад
+
         h2 Маршруты от других пользователей
 
-        if activities
+        if recommendations
             for recommended in recommendations
                 li.recommendation 
-                    h3 #{recommended.name}
-                    p #{recommended.description}
+                    a(href="/travels/view?id=" + recommended.id)
+                        h3 #{recommended.name}
+                        p #{recommended.description}
         else 
             p Тут пусто...
                     
