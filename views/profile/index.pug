@@ -1,0 +1,31 @@
+html(lang="ru")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Профиль - #{appname}
+        link(rel="stylesheet", href="/css/global.css")
+    body
+        a(href="/") Назад 
+        h2 #{name}
+        h3 #{nickname}
+
+        h1 Ваши личные маршруты
+        div.private-travels
+            //- private user-owned travels
+
+        h1 Маршруты, которыми вы поделились
+        div.added-travels
+            //- TODO: show added travels (that user has added)
+
+        h1 Места, которые вы добавили в систему
+        div.added-acitivities
+            //- TODO: show added activities (that user has added)
+
+
+        //- Control panel
+        h2 Панель управления аккаунтом
+        p Изменить имя
+        //- TODO
+
+        p Удалить аккаунт
+        button Удалить

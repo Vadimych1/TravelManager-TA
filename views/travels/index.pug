@@ -1,0 +1,18 @@
+html(lang="ru")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Маршруты - #{appname}
+        link(rel="stylesheet", href="/css/global.css")
+    body 
+        h2 Маршруты от других пользователей
+
+        if activities
+            for recommended in recommendations
+                li.recommendation 
+                    h3 #{recommended.name}
+                    p #{recommended.description}
+        else 
+            p Тут пусто...
+                    
+        a(href="/travels/new") Создать свой маршрут

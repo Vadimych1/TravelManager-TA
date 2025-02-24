@@ -27,6 +27,17 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(sessionParser);
 
+function requireAuth(req, res) {
+    const { session } = req.cookies;
+
+    if (!session) {
+        res.redirect("/auth/login");
+        return false;
+    }
+
+    return true;
+}
+
 // routes
 app.get('/', (req, res) => {
     res.render('index', {
@@ -59,8 +70,45 @@ app.get("/auth/register", (req, res) => {
 });
 
 app.get("/auth", (req, res) => {
-    res.redirect("/auth/login");
-})
+    res.redirect("/auth/login", {
+        ...params
+    });
+});
+
+app.get("/profile", (req, res) => {
+    requireAuth(req, res);
+    res.render("profile/index", {
+        ...params
+    });
+});
+
+app.get("/travels/comments", (req, res) => {
+    requireAuth(req, res);
+    res.render("travels/comments", {
+        ...params
+    });
+});
+
+app.get("/travels/new", (req, res) => {
+    requireAuth(req, res);
+    res.render("travels/new", {
+        ...params
+    });
+});
+
+app.get("/travels/view", (req, res) => {
+    requireAuth(req, res);
+    res.render("travels/view", {
+        ...params
+    });
+});
+
+app.get("/travels", (req, res) => {
+    requireAuth(req, res);
+    res.render("travels/index", {
+        ...params
+    });
+});
 
 // api
 app.post("/api/auth/login", async (req, res) => {

@@ -1,0 +1,23 @@
+html(lang="ru")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Просмотр комментариев о #{travelname} - #{appname}
+        link(rel="stylesheet", href="/css/global.css")
+    body
+        h1 #{travel.name}
+        h3 #{travel.town}
+
+        hr
+
+        ul.comments
+            for comment in comments
+                li.comment
+                    p #{comment.username}: #{comment.text}
+                    if comment.stars == 1:
+                        p 1 звезда
+                    else if comment.stars == 5:
+                        p 5 звёзд
+                    else
+                        p #{comment.stars} звёзд
+                

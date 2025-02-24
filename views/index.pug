@@ -4,8 +4,8 @@ html(lang="en")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         title #{appname}
 
-        link(rel="stylesheet", href="css/index.css")
-        link(rel="stylesheet", href="css/global.css")
+        link(rel="stylesheet", href="/css/index.css")
+        link(rel="stylesheet", href="/css/global.css")
     body
         header
             div.logo
@@ -13,8 +13,8 @@ html(lang="en")
                 h1 #{appname}
 
             div.buttons
-                button.about О нас
-                button.createTravel Создать поездку
+                a.about О нас
+                a(href="/travels/new").createTravel Создать маршрут
 
             div.user
                 if !user
@@ -22,6 +22,7 @@ html(lang="en")
                     a.register(href="/auth/register") Зарегистрироваться 
                 else
                     h2.username #{user.name}
+                    a.profile(href="/profile") Профиль
         
         main.top
             div.about-slider
@@ -51,14 +52,10 @@ html(lang="en")
                     div.outer-circle
             
         main.content
-            button.feed-request Публичные маршруты
-            div.public-maps-slider
-                //- TODO: add slider logic
-                p todo 
-            
-            button.create-map Создать свой маршрут
-            div.create-own-map
-                //- TODO: create own map
-                p todo
+            a(href="/travels")
+                button.feed-request Публичные маршруты            
+
+            a(href="/travels/new")
+                button.create-travel Создать свой маршрут
     
-    script(src="js/index.js")
+    script(src="/js/index.js")

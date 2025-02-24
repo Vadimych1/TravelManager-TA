@@ -1,0 +1,32 @@
+html(lang="ru")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Просмотр маршрута #{travelname} - #{appname}
+        link(rel="stylesheet", href="/css/global.css")
+    body
+        a(href="/travels") Назад 
+
+        h1 #{m_name}
+        h2 #{m_town}
+        a(href="/travels/comments?type=activity&id=#{activity.id}") Комментарии и отзывы
+
+
+        hr
+
+        if activities
+            for activity in activities
+                li.activity
+                    p #{activity.name}
+                    p #{activity.description}
+
+                    if activity.image
+                        img #{activity.image}
+                    else
+                        p Изображения отсутствуют
+
+                    a(href="/travels/comments?type=activity&id=#{activity.id}") Комментарии и отзывы
+
+
+        button Поделиться
+        button Экспорт

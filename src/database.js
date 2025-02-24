@@ -22,11 +22,43 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS sessions (
     id SERIAL PRIMARY KEY,
     user_id INTEGER,
-    token TEXT
+    token TEXT,
+
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
-ALTER TABLE sessions
-ADD FOREIGN KEY (user_id) REFERENCES users(id);
+
+CREATE TABLE IF NOT EXISTS towns (
+    id SERIAL PRIMARY KEY,
+    name TEXT,
+    coordinates TEXT
+);
+
+
+CREATE TABLE IF NOT EXISTS activities (
+    id SERIAL PRIMARY KEY,
+    town TEXT,
+    name TEXT,
+    description TEXT,
+    image TEXT,
+
+    FOREIGN KEY (town) REFERENCES towns(id)
+);
+
+
+CREATE TABLE IF NOT EXISTS travels (
+    id SERIAL PRIMARY KEY,
+    name TEXT,
+    description TEXT,
+    town TEXT,
+    owner_id INTEGER,
+    activities INTEGER[],
+    public BOOLEAN,
+
+    FOREIGN KEY (owner_id) REFERENCES users(id),
+    FOREIGN KEY (town) REFERENCES towns(id),
+    FOREIGN KEY (activities) REFERENCES activities(id)
+);
 `);
 
 function generateToken() {

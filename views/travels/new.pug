@@ -1,0 +1,25 @@
+html(lang="ru")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Новый маршрут - #{appname}
+        link(rel="stylesheet", href="/css/global.css")
+    body
+        a(href="/travels") Назад 
+
+        form(action="post")
+            input(type="text", placeholder="Название маршрута", name="m_name", required)
+            select(name="m_town", placeholder="Город", required)
+                option(value="not-a-town") Город...
+            
+            hr
+
+            //- TODO: add activity logic
+            input.add(type="button", value="Добавить поле")
+            div.activities
+
+            hr
+
+            input(type="submit", value="Создать")
+
+    script(src="/js/travels/new.js")
