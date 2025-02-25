@@ -3,19 +3,41 @@ html(lang="ru")
         meta(charset="UTF-8")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         title Маршруты - #{appname}
+        link(rel="icon", href="/favicon.svg", type="image/svg")
         link(rel="stylesheet", href="/css/global.css")
+        link(rel="stylesheet", href="/css/travels/index.css")
+        link(rel="stylesheet", href="/css/index.css")
+        link(rel="stylesheet", href="/css/header.css")
     body 
-        button(onclick="(function(){navigation.back()})()") Назад
+        header
+            div.logo
+                img(src="/favicon.svg", alt="fvc")
+                h1 #{appname}
 
-        h2 Маршруты от других пользователей
+            div.buttons
+                a(href="/travels").about Маршруты
+                a(href="/travels/new").createTravel Создать маршрут
 
-        if recommendations
-            for recommended in recommendations
-                li.recommendation 
-                    a(href="/travels/view?id=" + recommended.id)
-                        h3 #{recommended.name}
-                        p #{recommended.description}
-        else 
-            p Тут пусто...
-                    
-        a(href="/travels/new") Создать свой маршрут
+            div.user
+                if !user
+                    a.login(href="/auth/login") Войти
+                    a.register(href="/auth/register") Зарегистрироваться 
+                else
+                    h2.username #{user.name}
+                    a.profile(href="/profile") Профиль
+
+        button(onclick="(function(){navigation.back()})()", class="back") Назад
+
+        main
+            h2 Маршруты от других пользователей
+
+            if recommendations
+                for recommended in recommendations
+                    div.recommendation 
+                        a(href="/travels/view?id=" + recommended.id)
+                            h3 #{recommended.name}
+                            p #{recommended.description}
+            else 
+                p Тут пусто...
+                        
+            a(href="/travels/new") Создать свой маршрут

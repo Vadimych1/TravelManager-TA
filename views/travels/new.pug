@@ -3,27 +3,57 @@ html(lang="ru")
         meta(charset="UTF-8")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         title Новый маршрут - #{appname}
+        link(rel="icon", href="/favicon.svg", type="image/svg")
         link(rel="stylesheet", href="/css/global.css")
+        link(rel="stylesheet", href="/css/index.css")
+        link(rel="stylesheet", href="/css/header.css")
+        link(rel="stylesheet", href="/css/travels/new.css")
     body
-        button(onclick="(function(){navigation.back()})()") Назад
+        header
+            div.logo
+                img(src="/favicon.svg", alt="fvc")
+                h1 #{appname}
 
-        form(action="post")
-            input(type="text", placeholder="Название маршрута", name="m_name", required)
-            textarea(placeholder="Описание", name="name", cols=30, rows=5, required)
-            select(name="town", placeholder="Город", required)
-                option(value="not-a-town") Город...
+            div.buttons
+                a(href="/travels").about Маршруты
+                a(href="/travels/new").createTravel Создать маршрут
+
+            div.user
+                if !user
+                    a.login(href="/auth/login") Войти
+                    a.register(href="/auth/register") Зарегистрироваться 
+                else
+                    h2.username #{user.name}
+                    a.profile(href="/profile") Профиль
+        
+        button(onclick="(function(){navigation.back()})()", class="back") Назад
+
+        form(action="/api/travels/create", method="post")
+            input(type="text", placeholder="Название маршрута", name="name", required)
+            textarea(placeholder="Описание", name="description", cols=30, rows=5, required)
+            select(name="town", id="town-select", required)
+                option(value="") Город...
                 if towns
                     for town in towns
-                        option(value="#{{town.id}}") #{town.name}
+                        option(value=town.id) #{town.name}
+
+            label
+                input(type="checkbox", name="is_public")
+                span Публичный маршрут
                         
-            hr
+            hr(style="border-color: gray; width: 100%")
 
             //- TODO: add activity logic
             input.add(type="button", value="Добавить поле")
+            
+            hr(style="border-color: gray; width: 100%")
+            
             div.activities
 
-            hr
+            hr(style="border-color: gray; width: 100%")
 
             input(type="submit", value="Создать")
+
+        div.select-activity-overlay
 
     script(src="/js/travels/new.js")

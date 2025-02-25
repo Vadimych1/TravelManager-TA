@@ -44,15 +44,11 @@ html(lang="ru")
                         h3 #{activity.name}
                         p #{activity.description}
 
-                        if activity.image
-                            img(src="/activities/"+ activity.id + ".png", alt="Изображения отсутствуют")
-                        else
-                            p Изображения отсутствуют
+                        img(src="/activities/" + activity.id + ".png", alt="Изображения отсутствуют")
 
                         a(href="/travels/comments?type=activity&id=" + activity.id) Комментарии и отзывы
 
 
             //- TODO
-            if travel.public
-                button(onclick="if (navigator.share) { navigator.share({title: '" + travel.name + "', url: window.location.href}); } else { alert('Sharing not supported on this device.'); }") Поделиться
-            button Экспорт
+            a(href="/api/admins/approve?id=" + travel.id) Опубликовать
+            a(href="/api/admins/delete?id=" + travel.id) Удалить 

@@ -3,7 +3,9 @@ import pug from 'pug';
 import path from 'path';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
-import { db, login, register, sessionParser, travels } from './src/database.js';
+import muliparty from 'multiparty';
+import fs from 'fs';
+import { db, login, register, sessionParser, travels, renameAccount, logout, deleteAccount } from './src/database.js';
 
 dotenv.config();
 
@@ -28,9 +30,9 @@ app.use(cookieParser());
 app.use(sessionParser);
 
 function requireAuth(req, res) {
-    const { session } = req.cookies;
+    const { user } = res;
 
-    if (!session) {
+    if (!user) {
         res.redirect("/auth/login");
         return false;
     }
@@ -47,9 +49,9 @@ app.get('/', (req, res) => {
 });
 
 app.get("/auth/*", (req, res, next) => {
-    const { session } = req.cookies;
+    const { user } = res;
 
-    if (session) {
+    if (user) {
         res.redirect("/");
         return;
     }
@@ -59,26 +61,50 @@ app.get("/auth/*", (req, res, next) => {
 
 app.get("/auth/login", (req, res) => {
     res.render("auth/login", {
-        ...params
+        ...params,
+        user: res.user
     });
 });
 
 app.get("/auth/register", (req, res) => {
     res.render("auth/register", {
-        ...params
+        ...params,
+        user: res.user
     });
 });
 
 app.get("/auth", (req, res) => {
     res.redirect("/auth/login", {
-        ...params
+        ...params,
+        user: res.user
     });
 });
 
-app.get("/profile", (req, res) => {
-    if (requireAuth(req, res))
+app.get("/profile", async (req, res) => {
+    if (!requireAuth(req, res)) return;
+
+    let private_travels = await travels.getPrivateTravels(res.user.id);
+    let public_travels = await travels.getPublicTravels(res.user.id);
+    let moderated_travels = await travels.getModeratedTravels(res.user.id);
+
+    for (let i = 0; i < private_travels.length; i++) {
+        private_travels[i].town = await travels.getTown(private_travels[i].town);
+    }
+
+    for (let i = 0; i < public_travels.length; i++) {
+        public_travels[i].town = await travels.getTown(public_travels[i].town);
+    }
+
+    for (let i = 0; i < moderated_travels.length; i++) {
+        moderated_travels[i].town = await travels.getTown(moderated_travels[i].town);
+    }
+
     res.render("profile/index", {
-        ...params
+        ...params,
+        user: res.user,
+        private_travels,
+        public_travels,
+        moderated_travels,
     });
 });
 
@@ -90,10 +116,18 @@ app.get("/travels/comments", async (req, res) => {
         res.end();
     }
 
+    let comments = type == "travel" ? await travels.getTravelComments(id) : await travels.getActivityComments(id);
+
+    for (let i = 0; i < comments.length; i++) {
+        comments[i].user= (await travels.getUsername(comments[i].owner_id));
+    }
+
     let p = {
         ...params,
-        comments: type == "travel" ? await travels.getTravelComments(id) : travels.getActivityComments(id),
+        comments,
         travel: type == "travel" ? await travels.getPublicTravel(id) : await travels.getActivity(id),
+        user: res.user,
+        type,
     }
 
     p.travel.town = await travels.getTown(p.travel.town);
@@ -107,17 +141,16 @@ app.get("/travels/new", async (req, res) => {
     res.render("travels/new", {
         ...params,
         towns: await travels.getTowns(),
+        user: res.user
     });
 });
 
 app.get("/travels/view", async (req, res) => {
-    if (!requireAuth(req, res)) return;
-
     const t_id = req.query.id;
     let t = await travels.getPublicTravel(t_id);
 
-    if (!t) {
-        t = await travels.getTravel(t_id, req.session?.user_id);
+    if (res.user != null && !t) {
+        t = await travels.getTravel(t_id, res.user.id);
     }
 
     if (t) {
@@ -128,14 +161,50 @@ app.get("/travels/view", async (req, res) => {
     res.render("travels/view", {
         ...params,
         travel: t,
+        user: res.user
     });
 });
 
 app.get("/travels", async (req, res) => {
-    requireAuth(req, res);
     res.render("travels/index", {
         ...params,
         recommendations: await travels.getRecommendations(),
+        user: res.user
+    });
+});
+
+
+app.get("/admins", async (req, res) => {
+    if (!requireAuth(req, res)) return;
+
+    let moderated_travels = await travels.getAllModeratedTravels();
+
+    for (let i = 0; i < moderated_travels.length; i++) {
+        moderated_travels[i].town = await travels.getTown(moderated_travels[i].town);
+    }
+
+    res.render("admins/index", {
+        ...params,
+        user: res.user,
+        towns: await travels.getTowns(),
+        moderated_travels
+    });
+});
+
+app.get("/admins/view", async (req, res) => {
+    if (!requireAuth(req, res)) return;
+
+    let travel = await travels.getModeratedTravel(req.query.id);
+
+    if (travel) {
+        travel.town = await travels.getTown(travel.town);
+        travel.activities = await travels.getActivities(travel.activities);
+    }
+
+    res.render("admins/view", {
+        ...params,
+        user: res.user,
+        travel
     });
 });
 
@@ -179,7 +248,102 @@ app.post("/api/auth/register", async (req, res) => {
     res.redirect("/");
 });
 
+app.post("/api/auth/rename", async (req, res) => {
+    if (!requireAuth(req, res)) res.send({"status": "not_authorized"});
+    await renameAccount(res.user.id, req.body.name);
+    res.redirect("/profile");
+});
+
+app.post("/api/auth/delete", async (req, res) => {
+    if (!requireAuth(req, res)) res.send({"status": "not_authorized"});
+    await deleteAccount(res.user.id);
+    res.cookie("session", "", { maxAge: 0 });
+    res.redirect("/auth");
+})
+
+app.post("/api/auth/logout", async (req, res) => {
+    if (!requireAuth(req, res)) res.send({"status": "not_authorized"});
+    res.cookie("session", "", { maxAge: 0 });
+    res.redirect("/auth");
+})
+
+app.post("/api/auth/avatar",  async (req, res) => {
+    if (!requireAuth(req, res)) res.send({"status": "not_authorized"});
+    
+    let form = new muliparty.Form();
+    form.parse(req, (e, fields, files) => {
+        let avatar = files["avatar"];
+
+        if (avatar) {
+            fs.copyFileSync(avatar[0].path, `static/profiles/${res.user.id}.png`);
+        }
+    });
+
+    res.redirect("/profile");
+});
+
+
+app.get("/api/travels/get_activities", async (req, res) => {
+    if (!requireAuth(req, res)) res.send({"status": "not_authorized"});
+    const town = req.query.town;
+    res.send(await travels.getActivitiesByTown(town));
+});
+
+app.post("/api/travels/create", async (req, res) => {
+    if (!requireAuth(req, res)) res.send({"status": "not_authorized"})
+    const { name, description, town, is_public, activity } = req.body;
+
+    await travels.sendTravelToModetation(name, description, town, res.user.id, is_public, activity);
+
+    res.redirect("/profile")
+});
+
+app.get("/api/admins/approve", async (req, res) => {
+    if (!requireAuth(req, res)) res.send({"status": "not_authorized"})
+    await travels.approveTravel(req.query.id);
+    res.redirect("/admins");
+});
+
+app.get("/api/admins/delete", async (req, res) => {
+    if (!requireAuth(req, res)) res.send({"status": "not_authorized"})
+    await travels.rejectTravel(req.query.id);
+    res.redirect("/admins");
+});
+
+app.post("/api/travels/add_town", async (req, res) => {
+    if (!requireAuth(req, res)) res.send({"status": "not_authorized"})
+    await travels.addTown(req.body.name, req.body.coordinates);
+    res.redirect("/admins");
+});
+
+app.post("/api/travels/add_activity", async (req, res) => {
+    if (!requireAuth(req, res)) res.send({"status": "not_authorized"})
+    let form = new muliparty.Form();
+    form.parse(req, (e, fields, files) => {
+        travels.addActivity(fields.name[0], fields.description[0], fields.town[0]).then((r) => {
+            let f = files["image"];
+            if (f) {
+                fs.copyFileSync(f[0].path, `static/activities/${r}.png`);
+            }
+        });
+    });
+    
+    res.redirect("/admins");
+});
+
+app.post("/api/travels/add_comment", async (req, res) => {
+    if (!requireAuth(req, res)) res.send({"status": "not_authorized"});
+
+    if (req.query.type == "travel") {
+        await travels.addTravelComment(req.query.id, res.user.id, req.body.text, req.body.pros, req.body.cons);
+    } else {
+        await travels.addActivityComment(req.query.id, res.user.id, req.body.text, req.body.pros, req.body.cons);
+    }
+
+    res.redirect("/travels/comments?id=" + req.query.id + "&type=" + req.query.type);
+});
+
 // Start
 app.listen(3000, () => {
-    console.log("Server started on port 3000");
+    console.log("[INFO] Server started on port 3000");
 });

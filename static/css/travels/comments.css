@@ -1,0 +1,61 @@
+main {
+    padding: 20px;
+}
+
+form {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: calc(100% - 20px);
+    height: 40px;
+
+    display: flex;
+    flex-direction: row;
+    padding: 10px;
+
+    gap: 10px;
+}
+
+form input {
+    width: 100%;
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+form input[type="submit"] {
+    width: min-content;
+    background-color: var(--primary-color);
+    border: none;
+    color: #fff;
+    transition: 0.3s;
+}
+
+form input[type="submit"]:hover {
+    background-color: var(--secondary-color);
+}
+
+.comment {
+    padding: 10px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    background-color: #f0f0f0;
+    box-shadow: 0px 0px 5px gray;
+}
+
+.comment p {
+    padding: 0;
+    margin: 0;
+
+    font-size: 18px;
+}
+
+.comment .pros {
+    font-size: 16px;
+    color: #003110;
+}
+
+.comment .cons {
+    font-size: 16px;
+    color: #310000;
+}

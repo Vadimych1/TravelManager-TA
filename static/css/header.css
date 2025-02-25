@@ -1,0 +1,10 @@
+body {
+    padding-top: 100px;
+}
+
+header {
+    background-color: var(--primary-color);
+    box-shadow: 0px 0px 5px black;
+    color: black;
+    z-index: 98;
+}

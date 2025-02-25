@@ -1,0 +1,105 @@
+
+
+.select-activity-overlay {
+    display: none;
+    background: white;
+    margin: 30px;
+    padding: 15px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(100% - 90px);
+    height: calc(100% - 90px);
+    border-radius: 10px;
+    box-shadow: 0px 0px 5px black;
+    z-index: 100;
+}
+
+.select-activity-overlay button {
+    background-color: red;
+    color: #fff;
+    outline: none;
+    border: none;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+.activity-block {
+    background-color: #00000011;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.view-activity-block {
+    background-color: #00000011;
+    border-radius: 5px;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+.activity-block p {
+    margin-top: 5px;
+}
+
+.activity-block h2 {
+    margin: 0;
+    margin-bottom: 5px;
+}
+
+.activity-block h2, .activity-block p {
+    margin: 0;
+    padding: 0;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    gap: 10px;
+}
+
+form input[type="text"], textarea, select {
+    outline: none;
+    border-radius: 10px;
+    border: 1px black solid;
+    padding: 10px;
+    font-size: 14px;
+    background-color: white;
+}
+
+textarea {
+    resize: vertical;
+}
+
+form input[type="text"]:user-valid, textarea:user-valid, select:user-valid {
+    border: 1px green solid;
+}
+
+form input[type="text"]:user-invalid, textarea:user-invalid, select:user-invalid {
+    border: 1px red solid;
+}
+
+form input[type="button"] {
+    border-radius: 10px;
+    border: 1px black solid;
+    padding: 10px;
+    font-size: 14px;
+    background-color: white;
+    color: black;
+    margin-left: 20px;
+    align-self: center;
+    width: 200px;
+}
+
+form input[type="submit"]{
+    border-radius: 10px;
+    border: none;
+    padding: 10px;
+    font-size: 14px;
+    background-color: var(--primary-color);
+    color: #fff;
+    margin-left: 20px;
+    align-self: center;
+    width: 200px;
+}

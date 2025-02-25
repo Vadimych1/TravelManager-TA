@@ -3,17 +3,17 @@ html(lang="en")
         meta(charset="UTF-8")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         title #{appname}
-
+        link(rel="icon", href="/favicon.svg", type="image/svg")
         link(rel="stylesheet", href="/css/index.css")
         link(rel="stylesheet", href="/css/global.css")
     body
         header
             div.logo
-                img(src="favicon.png", alt="fvc")
+                img(src="/favicon.svg", alt="fvc")
                 h1 #{appname}
 
             div.buttons
-                a.about О нас
+                a(href="/travels").about Маршруты
                 a(href="/travels/new").createTravel Создать маршрут
 
             div.user

@@ -75,6 +75,20 @@ CREATE TABLE IF NOT EXISTS travels (
     -- FOREIGN KEY (activities) REFERENCES activities(id) -- replaced with trigger
 );
 
+
+CREATE TABLE IF NOT EXISTS moderated_travels (
+    id SERIAL PRIMARY KEY,
+    name TEXT,
+    description TEXT,
+    town INTEGER,
+    owner_id INTEGER,
+    activities INTEGER[],
+    public BOOLEAN,
+
+    FOREIGN KEY (owner_id) REFERENCES users(id),
+    FOREIGN KEY (town) REFERENCES towns(id)
+);
+
 -- CREATE TRIGGER activities_array_check
 -- BEFORE INSERT OR UPDATE ON travels
 -- FOR EACH ROW EXECUTE FUNCTION check_activities_array();
@@ -143,6 +157,18 @@ async function register(email, name, password) {
     return token;
 }
 
+async function renameAccount(id, new_name) {
+    return await db.query("UPDATE users SET name = $1 WHERE id = $2", [new_name, id]);
+}
+
+async function deleteAccount(id) {
+    return await db.query("DELETE FROM users WHERE id = $1", [id]);
+}
+
+async function logout(token) {
+    return await db.query("DELETE FROM sessions WHERE token = $1", [token]);
+}
+
 async function checkSession(token) {
     const session = (await db.query("SELECT * FROM sessions WHERE token = $1", [token])).rows[0];
     if (!session) {
@@ -203,14 +229,90 @@ const travels = {
         return res;
     },
     getTravelComments: async (id) => {
-        return (await db.query("SELECT * FROM travels_comments WHERE id = $1", [id])).rows;
+        return (await db.query("SELECT * FROM travels_comments WHERE travel_id = $1", [id])).rows;
     },
     getActivityComments: async (id) => {
-        return (await db.query("SELECT * FROM activity_comments WHERE id = $1", [id])).rows;
+        return (await db.query("SELECT * FROM activity_comments WHERE activity_id = $1", [id])).rows;
     },
     getActivity: async (id) => {
         return (await db.query("SELECT * FROM activities WHERE id = $1 LIMIT 1", [id])).rows[0];
-    }
+    },
+    getActivitiesByTown: async (town) => {
+        return (await db.query("SELECT * FROM activities WHERE town = $1", [town])).rows;
+    },
+    getPublicTravels: async (user) => {
+        return (await db.query("SELECT * FROM travels WHERE owner_id = $1 AND public", [user])).rows;
+    },
+    getPrivateTravels: async (user) => {
+        return (await db.query("SELECT * FROM travels WHERE owner_id = $1 AND (NOT public)", [user])).rows;
+    },
+    getModeratedTravels: async (user) => {
+        return (await db.query("SELECT * FROM moderated_travels WHERE owner_id = $1", [user])).rows;
+    },
+    sendTravelToModetation: async (name, descrtiption, town, owner_id, is_public, activities) => {
+        if (typeof activities !== Array) {
+            activities = [activities];
+        }
+        is_public = is_public == "on" ? 1 : 0
+
+        if (is_public > 0) {
+            await db.query(`INSERT INTO moderated_travels 
+                (name, description, town, owner_id, activities, public) 
+                VALUES ($1, $2, $3, $4, $5, $6)`, [name, descrtiption, town, owner_id, activities, true]);
+        } else {
+            await db.query(`INSERT INTO travels 
+                (name, description, town, owner_id, activities, public) 
+                VALUES ($1, $2, $3, $4, $5, $6)`, [name, descrtiption, town, owner_id, activities, false]);
+        }
+    },
+    getAllModeratedTravels: async () => {
+        return (await db.query("SELECT * FROM moderated_travels")).rows;
+    },
+    getModeratedTravel: async (id) => {
+        return (await db.query("SELECT * FROM moderated_travels WHERE id = $1 LIMIT 1", [id])).rows[0];
+    },
+    approveTravel: async (id) => {
+        const moderatedTravel = await db.query("SELECT * FROM moderated_travels WHERE id = $1 LIMIT 1", [id]);
+        if (moderatedTravel.rowCount > 0) {
+            const { name, description, town, owner_id, activities } = moderatedTravel.rows[0];
+            await db.query(`INSERT INTO travels (name, description, town, owner_id, activities, public) 
+                            VALUES ($1, $2, $3, $4, $5, $6)`, [name, description, town, owner_id, activities, true]);
+            await db.query("DELETE FROM moderated_travels WHERE id = $1", [id]);
+        }
+    },
+    rejectTravel: async (id) => {
+        await db.query("DELETE FROM moderated_travels WHERE id = $1", [id]);
+    },
+    addTravelComment: async (id, user_id, text, pros, cons) => {
+        await db.query("INSERT INTO travels_comments (activity_id, owner_id, text, pros, cons) VALUES ($1, $2, $3, $4, $5)", [id, user_id, text, pros, cons]);
+    },
+    addActivityComment: async (id, user_id, text, pros, cons) => {
+        await db.query("INSERT INTO activity_comments (activity_id, owner_id, text, pros, cons) VALUES ($1, $2, $3, $4, $5)", [id, user_id, text, pros, cons]);
+    },
+    getUsername: async (id) => {
+        return (await db.query("SELECT name, id FROM users WHERE id = $1 LIMIT 1", [id])).rows[0];
+    },
+    addTown: async (name, coordinates) => {
+        await db.query("INSERT INTO towns (name, coordinates) VALUES ($1, $2)", [name, coordinates]);
+    },
+    addActivity: async (name, description, town) => {
+        await db.query("INSERT INTO activities (name, description, town) VALUES ($1, $2, $3)", [name, description, town]);
+        const result = await db.query("INSERT INTO activities (name, description, town) VALUES ($1, $2, $3) RETURNING id", [name, description, town]);
+        return result.rows[0].id;
+    },
 };
 
-export { db, login, register, checkSession, sessionParser, travels };
+// CREATE TABLE IF NOT EXISTS travels (
+//     id SERIAL PRIMARY KEY,
+//     name TEXT,
+//     description TEXT,
+//     town INTEGER,
+//     owner_id INTEGER,
+//     activities INTEGER[],
+
+//     FOREIGN KEY (owner_id) REFERENCES users(id),
+//     FOREIGN KEY (town) REFERENCES towns(id)
+//     -- FOREIGN KEY (activities) REFERENCES activities(id) -- replaced with trigger
+// );
+
+export { db, login, register, checkSession, sessionParser, renameAccount, deleteAccount, logout, travels };

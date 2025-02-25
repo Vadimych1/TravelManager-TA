@@ -3,26 +3,54 @@ html(lang="ru")
         meta(charset="UTF-8")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         title Просмотр комментариев о #{travelname} - #{appname}
+        link(rel="icon", href="/favicon.svg", type="image/svg")
         link(rel="stylesheet", href="/css/global.css")
+        link(rel="stylesheet", href="/css/index.css")
+        link(rel="stylesheet", href="/css/header.css")
+        link(rel="stylesheet", href="/css/travels/comments.css")
     body
-        button(onclick="(function(){navigation.back()})()") Назад
+        header
+            div.logo
+                img(src="/favicon.svg", alt="fvc")
+                h1 #{appname}
 
-        h1 #{travel.name}
-        h3 Город: #{travel.town.name}
+            div.buttons
+                a(href="/travels").about Маршруты
+                a(href="/travels/new").createTravel Создать маршрут
 
-        hr
+            div.user
+                if !user
+                    a.login(href="/auth/login") Войти
+                    a.register(href="/auth/register") Зарегистрироваться 
+                else
+                    h2.username #{user.name}
+                    a.profile(href="/profile") Профиль
 
-        ul.comments
-            if comments && comments.length > 0
-                for comment in comments
-                    li.comment
-                        p #{comment.username}: #{comment.text}
-                        p Понравилось: #{comment.pros}
-                        if comment.stars == 1
-                            p 1 звезда
-                        else if comment.stars == 5
-                            p 5 звёзд
-                        else
-                            p #{comment.stars} звёзд
-            else 
-                p Комментариев и отзывов пока нет
+        button(onclick="(function(){navigation.back()})()", class="back") Назад
+
+        main
+            h1 #{travel.name}
+            h3 Город: #{travel.town.name}
+
+            hr
+
+            div.comments
+                if comments && comments.length > 0
+                    for comment in comments
+                        div.comment
+                            div(style="display: flex; flex-direction: row; align-items: center;gap: 10px")
+                                img(src="/profiles/" + user.id + ".png", style="width: 30px; height: 30px;")
+                                p 
+                                    b #{comment.user.name}: 
+                                    span #{comment.text}
+                            
+                            p.pros Понравилось: #{comment.pros}
+                            p.cons Не понравилось: #{comment.cons}
+                else 
+                    p Комментариев и отзывов пока нет
+
+        form(method="post", action="/api/travels/add_comment?type=" + type + "&id=" + travel.id)
+            input(type="text", placeholder="Ваш комментарий", name="text", required) 
+            input(type="text", placeholder="Преимущества", name="pros", required)
+            input(type="text", placeholder="Недостатки", name="cons", required)
+            input(type="submit", value="Отправить")

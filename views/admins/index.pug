@@ -1,0 +1,56 @@
+html(lang="ru")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Админ-панель - #{appname}
+        link(rel="icon", href="/favicon.svg", type="image/svg")
+        link(rel="stylesheet", href="/css/global.css")
+        link(rel="stylesheet", href="/css/index.css")
+        link(rel="stylesheet", href="/css/header.css")
+        link(rel="stylesheet", href="/css/admins/index.css")
+    body
+        header
+            div.logo
+                img(src="/favicon.svg", alt="fvc")
+                h1 #{appname}
+
+            div.buttons
+                a(href="/travels").about Маршруты
+                a(href="/travels/new").createTravel Создать маршрут
+
+            div.user
+                if !user
+                    a.login(href="/auth/login") Войти
+                    a.register(href="/auth/register") Зарегистрироваться 
+                else
+                    h2.username #{user.name}
+                    a.profile(href="/profile") Профиль
+
+        main
+            h1 Маршруты для модерации
+                div.public-travels
+                if moderated_travels && moderated_travels.length > 0
+                    for travel in moderated_travels
+                        a(href="/admins/view?id=" + travel.id)
+                            div.private-travel-block
+                                h2 #{travel.name} 
+                                p #{travel.town.name}
+                    else 
+                        p Тут пусто...
+
+            h1 Добавление города
+            form(method="post", action="/api/travels/add_town")
+                input(type="text", name="name", placeholder="Название города")
+                inpit(type="text", name="coordinates", placeholder="Геогр. координаты")
+                input(type="submit", value="Добавить")
+
+            h1 Добавление активностей
+            form(method="post", action="/api/travels/add_activity", enctype="multipart/form-data", required)
+                input(type="text", name="name", placeholder="Название места", required)
+                input(type="text", name="description", placeholder="Описание", required)
+                input(type="file", name="image", accept="image/png", required)
+                select(name="town", required) 
+                    option(value="") Город...
+                    for town in towns
+                        option(value=town.id) #{town.name} 
+                input(type="submit", value="Создать")
