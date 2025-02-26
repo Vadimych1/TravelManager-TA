@@ -72,6 +72,17 @@ html(lang="ru")
                 else 
                     p Тут пусто...
 
+            h1 Ваши комментарии
+            div.public-travels
+                if comments && comments.length > 0
+                    for travel in comments
+                        div.private-travel-block
+                            h2(style="margin: 0; padding: 0") К: #{travel.r_name}
+                            p(style="margin: 0; padding: 0") #{travel.text} 
+                            p(style="margin: 0; padding: 0") Преимущества: #{travel.pros}
+                            p(style="margin: 0; padding: 0") Недостатки: #{travel.cons}
+                else 
+                    p Тут пусто...
 
         //- Control panel
         main

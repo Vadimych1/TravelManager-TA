@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS activities (
     name TEXT,
     description TEXT,
     image TEXT,
+    coordinates TEXT,
 
     FOREIGN KEY (town) REFERENCES towns(id)
 );
@@ -221,6 +222,10 @@ const travels = {
     },
     getActivities: async (activities_ids) => {
         let res = [];
+        if (activities_ids.length > 0 && (typeof activities_ids[0]) !== 'number') {
+            activities_ids = activities_ids[0];
+        }
+
         for (let id of activities_ids) {
             res.push(
                 (await db.query("SELECT * FROM activities WHERE id = $1 LIMIT 1", [id])).rows[0]
@@ -249,7 +254,7 @@ const travels = {
     getModeratedTravels: async (user) => {
         return (await db.query("SELECT * FROM moderated_travels WHERE owner_id = $1", [user])).rows;
     },
-    sendTravelToModetation: async (name, descrtiption, town, owner_id, is_public, activities) => {
+    sendTravelToModetation: async (name, descrtiption, town, owner_id, is_public, activities, coordinates) => {
         if (typeof activities !== Array) {
             activities = [activities];
         }
@@ -284,7 +289,7 @@ const travels = {
         await db.query("DELETE FROM moderated_travels WHERE id = $1", [id]);
     },
     addTravelComment: async (id, user_id, text, pros, cons) => {
-        await db.query("INSERT INTO travels_comments (activity_id, owner_id, text, pros, cons) VALUES ($1, $2, $3, $4, $5)", [id, user_id, text, pros, cons]);
+        await db.query("INSERT INTO travels_comments (travel_id, owner_id, text, pros, cons) VALUES ($1, $2, $3, $4, $5)", [id, user_id, text, pros, cons]);
     },
     addActivityComment: async (id, user_id, text, pros, cons) => {
         await db.query("INSERT INTO activity_comments (activity_id, owner_id, text, pros, cons) VALUES ($1, $2, $3, $4, $5)", [id, user_id, text, pros, cons]);
@@ -295,11 +300,25 @@ const travels = {
     addTown: async (name, coordinates) => {
         await db.query("INSERT INTO towns (name, coordinates) VALUES ($1, $2)", [name, coordinates]);
     },
-    addActivity: async (name, description, town) => {
-        await db.query("INSERT INTO activities (name, description, town) VALUES ($1, $2, $3)", [name, description, town]);
-        const result = await db.query("INSERT INTO activities (name, description, town) VALUES ($1, $2, $3) RETURNING id", [name, description, town]);
+    addActivity: async (name, description, town, coordinates) => {
+        const result = await db.query("INSERT INTO activities (name, description, town, coordinates) VALUES ($1, $2, $3, $4) RETURNING id", [name, description, town, coordinates]);
         return result.rows[0].id;
     },
+    getAllComments: async (id) => {
+        let a = (await db.query(`
+            SELECT ac.*, a.name AS r_name 
+            FROM activity_comments ac
+            LEFT JOIN activities a ON ac.activity_id = a.id
+            WHERE ac.owner_id = $1
+        `, [id])).rows;
+        let b = (await db.query(`
+            SELECT tc.*, t.name AS r_name 
+            FROM travels_comments tc
+            LEFT JOIN travels t ON tc.travel_id = t.id
+            WHERE tc.owner_id = $1
+        `, [id])).rows;
+        return [...a, ...b];
+    }
 };
 
 // CREATE TABLE IF NOT EXISTS travels (

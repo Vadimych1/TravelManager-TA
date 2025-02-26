@@ -5,6 +5,10 @@ import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import muliparty from 'multiparty';
 import fs from 'fs';
+import JSZip from "jszip";
+import tokml from 'tokml';
+import contentDisposition from 'content-disposition';
+import {create} from 'xmlbuilder2';
 import { db, login, register, sessionParser, travels, renameAccount, logout, deleteAccount } from './src/database.js';
 
 dotenv.config();
@@ -105,16 +109,13 @@ app.get("/profile", async (req, res) => {
         private_travels,
         public_travels,
         moderated_travels,
+        comments,
     });
 });
 
 app.get("/travels/comments", async (req, res) => {
     const id = req.query.id;
     const type = req.query.type;
-
-    if (!id || !type) {
-        res.end();
-    }
 
     let comments = type == "travel" ? await travels.getTravelComments(id) : await travels.getActivityComments(id);
 
@@ -263,6 +264,7 @@ app.post("/api/auth/delete", async (req, res) => {
 
 app.post("/api/auth/logout", async (req, res) => {
     if (!requireAuth(req, res)) res.send({"status": "not_authorized"});
+    await logout(res.user.token);
     res.cookie("session", "", { maxAge: 0 });
     res.redirect("/auth");
 })
@@ -320,7 +322,7 @@ app.post("/api/travels/add_activity", async (req, res) => {
     if (!requireAuth(req, res)) res.send({"status": "not_authorized"})
     let form = new muliparty.Form();
     form.parse(req, (e, fields, files) => {
-        travels.addActivity(fields.name[0], fields.description[0], fields.town[0]).then((r) => {
+        travels.addActivity(fields.name[0], fields.description[0], fields.town[0], fields.coordinates[0]).then((r) => {
             let f = files["image"];
             if (f) {
                 fs.copyFileSync(f[0].path, `static/activities/${r}.png`);
@@ -341,6 +343,126 @@ app.post("/api/travels/add_comment", async (req, res) => {
     }
 
     res.redirect("/travels/comments?id=" + req.query.id + "&type=" + req.query.type);
+});
+
+
+app.get("/api/download/kml", async (req, res) => {
+    let t = await travels.getPublicTravel(req.query.id);
+    if (!t) {
+        if (!requireAuth(req, res)) res.send({"status": "not_authorized"});
+        t = await travels.getTravel(req.query.id, res.user.id);
+    }
+
+    if (!t) {
+        res.send({"status": "not_found"});
+        return;
+    }
+
+    let activities = await travels.getActivities(t.activities);
+    let features = [];
+
+    for (let i = 0; i < activities.length; i++) {
+        let activity = activities[i];
+        let coordinates = JSON.parse("["+activity.coordinates+"]");
+        let feature = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [coordinates[1], coordinates[0]]
+            },
+            "properties": {
+                "name": activity.name,
+                "description": activity.description
+            }
+        }
+        features.push(feature);
+    }
+
+    const geojson = {
+        "type": "FeatureCollection",
+        "features": features
+    }
+
+    const kml = tokml(geojson);
+    res.set("Content-Disposition", contentDisposition(`${t.name}.kml`));
+    res.setHeader("Content-Type", "application/vnd.google-earth.kml+xml");
+    res.send(kml);
+});
+
+app.get("/api/download/kmz", async (req, res) => {
+    let zip = new JSZip();
+    let t = await travels.getPublicTravel(req.query.id);
+    if (!t) {
+        if (!requireAuth(req, res)) res.send({"status": "not_authorized"});
+        t = await travels.getTravel(req.query.id, res.user.id);
+    }
+
+    if (!t) {
+        res.send({"status": "not_found"});
+        return;
+    }
+
+    let activities = await travels.getActivities(t.activities);
+    let features = [];
+
+    for (let i = 0; i < activities.length; i++) {
+        let activity = activities[i];
+        let coordinates = JSON.parse("["+activity.coordinates+"]");
+        let feature = {
+            "type": "Feature",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [coordinates[1], coordinates[0]]
+            },
+            "properties": {
+                "name": activity.name,
+                "description": activity.description + `\n<img src="activities/${activity.id}.png"/>`,
+                "icon": `activities/${activity.id}.png`,
+            }
+        }
+        if (fs.existsSync(`static/activities/${activity.id}.png`)) {
+            const image = fs.readFileSync(`static/activities/${activity.id}.png`);
+            zip = zip.file(`activities/${activity.id}.png`, image);
+            feature.properties.icon = `activities/${activity.id}.png`;
+        }
+        features.push(feature);
+    }
+
+    const geojson = {
+        "type": "FeatureCollection",
+        "features": features
+    }
+    
+    const kml = tokml(geojson);
+    zip = zip.file("travel.kml", kml);
+
+    const content = await zip.generateAsync({type:"nodebuffer"});
+    res.setHeader("Content-Type", "application/vnd.google-earth.kmz");
+    res.set("Content-Disposition", contentDisposition(`${t.name}.kmz`));
+    res.send(content);
+});
+
+app.get("/api/download/gpx", async (req, res) => {
+    let activitiy = await travels.getActivity(req.query.id);
+    const gpxData = {
+        gpx: {
+            '@version': '1.1',
+            '@creator': 'Travel Manager GPX Generator',
+            '@xmlns': 'http://www.topografix.com/GPX/1/1',
+            wpt: {
+                '@lat': JSON.parse("["+activitiy.coordinates+"]")[0],
+                '@lon': JSON.parse("["+activitiy.coordinates+"]")[1],
+                name: activitiy.name,
+                desc: activitiy.description
+            }
+        }
+    };
+    
+    const gpx = create(gpxData).end({ prettyPrint: true });
+
+    res.setHeader("Content-Type", "application/gpx");
+    res.set("Content-Disposition", contentDisposition(`${activitiy.name}.gpx`));
+    res.send(gpx);
 });
 
 // Start

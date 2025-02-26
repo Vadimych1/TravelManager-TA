@@ -41,16 +41,19 @@ html(lang="ru")
             h1 Добавление города
             form(method="post", action="/api/travels/add_town")
                 input(type="text", name="name", placeholder="Название города")
-                inpit(type="text", name="coordinates", placeholder="Геогр. координаты")
+                input(type="text", name="coordinates", placeholder="Геогр. координаты (ш, д)", required)
                 input(type="submit", value="Добавить")
 
             h1 Добавление активностей
             form(method="post", action="/api/travels/add_activity", enctype="multipart/form-data", required)
                 input(type="text", name="name", placeholder="Название места", required)
                 input(type="text", name="description", placeholder="Описание", required)
+                input(type="text", name="coordinates", placeholder="Геогр. координаты (ш, д)", required)
                 input(type="file", name="image", accept="image/png", required)
+                
                 select(name="town", required) 
                     option(value="") Город...
                     for town in towns
                         option(value=town.id) #{town.name} 
+                
                 input(type="submit", value="Создать")

@@ -49,10 +49,13 @@ html(lang="ru")
                         else
                             p Изображения отсутствуют
 
-                        a(href="/travels/comments?type=activity&id=" + activity.id) Комментарии и отзывы
+                        button(onclick="(function(){let p=document.createElement('a');p.href='/api/download/gpx?id=" + activity.id + "';p.click()})()") Экспорт GPX
+                        button(onclick="(function(){let p=document.createElement('a');p.href='/travels/comments?id=" + activity.id + ";p.click()})()") Комментарии
 
 
-            //- TODO
+
             if travel.public
                 button(onclick="if (navigator.share) { navigator.share({title: '" + travel.name + "', url: window.location.href}); } else { alert('Sharing not supported on this device.'); }") Поделиться
-            button Экспорт
+
+            button(onclick="(function(){let p=document.createElement('a');p.href='/api/download/kml?id=" + travel.id + "';p.click()})()") Экспорт KML 
+            button(onclick="(function(){let p=document.createElement('a');p.href='/api/download/kmz?id=" + travel.id + "';p.click()})()") Экспорт KMZ
