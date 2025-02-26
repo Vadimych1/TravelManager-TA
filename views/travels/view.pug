@@ -44,10 +44,7 @@ html(lang="ru")
                         h3 #{activity.name}
                         p #{activity.description}
 
-                        if activity.image
-                            img(src="/activities/"+ activity.id + ".png", alt="Изображения отсутствуют")
-                        else
-                            p Изображения отсутствуют
+                        img(src="/activities/"+ activity.id + ".png", alt="Изображения отсутствуют")
 
                         button(onclick="(function(){let p=document.createElement('a');p.href='/api/download/gpx?id=" + activity.id + "';p.click()})()") Экспорт GPX
                         button(onclick="(function(){let p=document.createElement('a');p.href='/travels/comments?id=" + activity.id + ";p.click()})()") Комментарии

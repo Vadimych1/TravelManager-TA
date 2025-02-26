@@ -78,10 +78,7 @@ app.get("/auth/register", (req, res) => {
 });
 
 app.get("/auth", (req, res) => {
-    res.redirect("/auth/login", {
-        ...params,
-        user: res.user
-    });
+    res.redirect("/auth/login");
 });
 
 app.get("/profile", async (req, res) => {
@@ -102,6 +99,8 @@ app.get("/profile", async (req, res) => {
     for (let i = 0; i < moderated_travels.length; i++) {
         moderated_travels[i].town = await travels.getTown(moderated_travels[i].town);
     }
+
+    const comments = await travels.getAllComments(res.user.id);
 
     res.render("profile/index", {
         ...params,
