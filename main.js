@@ -221,8 +221,7 @@ app.post("/api/auth/login", async (req, res) => {
     }
 
     res.cookie("session", token, {
-        httpOnly: true,
-        secure: true
+        httpOnly: true
     });
 
     res.redirect("/");
@@ -241,8 +240,7 @@ app.post("/api/auth/register", async (req, res) => {
     }
 
     res.cookie("session", token, {
-        httpOnly: true,
-        secure: true
+        httpOnly: true
     });
 
     res.redirect("/");

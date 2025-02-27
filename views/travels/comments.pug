@@ -39,13 +39,13 @@ html(lang="ru")
                     for comment in comments
                         div.comment
                             div(style="display: flex; flex-direction: row; align-items: center;gap: 10px")
-                                img(src="/profiles/" + user.id + ".png", style="width: 30px; height: 30px;")
+                                img(src="/profiles/" + comment.owner_id + ".png", style="width: 30px; height: 30px;")
                                 p 
                                     b #{comment.user.name}: 
                                     span #{comment.text}
                             
-                            p.pros Понравилось: #{comment.pros}
-                            p.cons Не понравилось: #{comment.cons}
+                            p.pros Преимущества: #{comment.pros}
+                            p.cons Недостатки: #{comment.cons}
                 else 
                     p Комментариев и отзывов пока нет
 

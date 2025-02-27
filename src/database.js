@@ -226,6 +226,10 @@ const travels = {
             activities_ids = activities_ids[0];
         }
 
+        if (!activities_ids) {
+            return [];
+        }
+        
         for (let id of activities_ids) {
             res.push(
                 (await db.query("SELECT * FROM activities WHERE id = $1 LIMIT 1", [id])).rows[0]
